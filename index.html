@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Blotto Research">
+<meta name="theme-color" content="#1a1a18">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<title>Blotto Weekly Research</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --dark: #1a1a18;
+  --muted: #888780;
+  --border: #d3d1c7;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  min-height: 100dvh;
+  padding: calc(var(--safe-top) + 20px) 16px calc(var(--safe-bottom) + 28px);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.header { margin-bottom: 16px; }
+.brand { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.title { font-size: 26px; font-weight: 500; line-height: 1.15; }
+
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 12px; padding: 4px;
+  margin-bottom: 20px;
+}
+.tab {
+  flex: 1; text-align: center; font-size: 14px; font-weight: 500;
+  padding: 9px 12px; border-radius: 9px; cursor: pointer;
+  color: var(--muted); transition: background 0.15s, color 0.15s;
+  user-select: none;
+}
+.tab.active { background: var(--dark); color: #f5f4f0; }
+
+.week-label { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px;
+  margin-bottom: 20px;
+}
+.badge-green { background: #EAF3DE; color: #3B6D11; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #639922; }
+
+.section { margin-bottom: 16px; }
+.section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.section-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.section-title { font-size: 16px; font-weight: 500; }
+
+.card { background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border); padding: 14px 16px; margin-bottom: 8px; }
+.card-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.card-body { font-size: 13px; color: #4a4946; line-height: 1.55; }
+.card-tag { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px; margin-top: 7px; }
+.tag-red { background: #FCEBEB; color: #A32D2D; }
+.tag-blue { background: #E6F1FB; color: #185FA5; }
+.tag-amber { background: #FAEEDA; color: #854F0B; }
+
+.takeaway { background: var(--dark); color: #f5f4f0; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+.takeaway-label { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #888780; margin-bottom: 6px; }
+.takeaway-text { font-size: 14px; line-height: 1.6; color: #e8e7e3; }
+
+/* Archive */
+.archive-item {
+  background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border);
+  margin-bottom: 8px; overflow: hidden;
+}
+.archive-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px; cursor: pointer; user-select: none;
+}
+.archive-date { font-size: 14px; font-weight: 500; }
+.archive-preview { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
+.archive-chevron { font-size: 14px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
+.archive-chevron.open { transform: rotate(180deg); }
+.archive-body { display: none; padding: 0 16px 14px; border-top: 0.5px solid var(--border); }
+.archive-body.open { display: block; }
+.archive-body .section { margin-top: 14px; }
+.archive-body .takeaway { margin-top: 14px; margin-bottom: 0; }
+
+.empty-state { background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border); padding: 32px 20px; text-align: center; }
+.empty-icon { font-size: 32px; margin-bottom: 12px; }
+.empty-title { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
+.empty-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+.divider { height: 0.5px; background: var(--border); margin: 20px 0; }
+.footer-text { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">Blotto Games</div>
+  <div class="title">Weekly Research</div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" id="tab-this" onclick="switchTab('this')">This Week</div>
+  <div class="tab" id="tab-archive" onclick="switchTab('archive')">Previous Weeks</div>
+</div>
+
+<!-- THIS WEEK -->
+<div id="view-this">
+  <div class="badge badge-green">
+    <div class="dot"></div>
+    <span>Updates every Monday at 8am</span>
+  </div>
+  <div class="week-label" id="week-label"></div>
+  <div id="content-this"></div>
+</div>
+
+<!-- ARCHIVE -->
+<div id="view-archive" style="display:none;">
+  <div id="content-archive"></div>
+</div>
+
+<div class="divider"></div>
+<div class="footer-text">
+  Competitors &middot; Publishers &middot; Market Trends<br>
+  Full reports in Outputs &rsaquo; Blotto Games &rsaquo; Research
+</div>
+
+<script>
+// Replaced each Monday by the scheduled task. Do not edit manually.
+const RESEARCH_DATA = null; /* __RESEARCH_DATA__ */
+const HISTORY_DATA = []; /* __HISTORY_DATA__ */
+
+// ── Utilities ────────────────────────────────────────────────────────────────
+
+function formatDate(str) {
+  try {
+    return new Date(str).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  } catch(e) { return str; }
+}
+
+function shortDate(str) {
+  try {
+    return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  } catch(e) { return str; }
+}
+
+function tagHtml(tag) {
+  const map = {
+    competitor: ['tag-red',  'Direct competitor'],
+    funded:     ['tag-blue', 'Well funded'],
+    open:       ['tag-blue', 'Open submissions'],
+    uk:         ['tag-amber','UK-based'],
+    closed:     ['tag-red',  'Closed submissions']
+  };
+  if (!tag || !map[tag]) return '';
+  return `<span class="card-tag ${map[tag][0]}">${map[tag][1]}</span>`;
+}
+
+function sectionsHtml(data) {
+  let html = '';
+
+  if (data.takeaway) {
+    html += `<div class="takeaway"><div class="takeaway-label">This week&#8217;s takeaway</div><div class="takeaway-text">${data.takeaway}</div></div>`;
+  }
+
+  if (data.competitors && data.competitors.length) {
+    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#EEEDFE;">&#9876;</div><div class="section-title">Competitor Games</div></div>`;
+    data.competitors.forEach(c => {
+      html += `<div class="card"><div class="card-name">${c.name}</div><div class="card-body">${c.body}</div>${tagHtml(c.tag)}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (data.publishers && data.publishers.length) {
+    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#E1F5EE;">&#128218;</div><div class="section-title">Publishers</div></div>`;
+    data.publishers.forEach(p => {
+      html += `<div class="card"><div class="card-name">${p.name}</div><div class="card-body">${p.body}</div>${tagHtml(p.tag)}</div>`;
+    });
+    html += `</div>`;
+  }
+
+  if (data.trends && data.trends.length) {
+    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#FAEEDA;">&#128
