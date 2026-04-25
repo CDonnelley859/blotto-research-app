@@ -191,4 +191,93 @@ function sectionsHtml(data) {
   }
 
   if (data.trends && data.trends.length) {
-    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#FAEEDA;">&#128
+    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#FAEEDA;">&#128200;</div><div class="section-title">Market Trends</div></div>`;
+    data.trends.forEach(t => {
+      html += `<div class="card"><div class="card-name">${t.name}</div><div class="card-body">${t.body}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+// ── This Week ────────────────────────────────────────────────────────────────
+
+function renderThisWeek() {
+  const label = document.getElementById('week-label');
+  if (RESEARCH_DATA && RESEARCH_DATA.date) {
+    label.textContent = 'Week of ' + formatDate(RESEARCH_DATA.date);
+  } else {
+    const today = new Date();
+    label.textContent = 'Week of ' + today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  const inner = sectionsHtml(RESEARCH_DATA || {});
+  document.getElementById('content-this').innerHTML = inner || `
+    <div class="empty-state">
+      <div class="empty-icon">&#128269;</div>
+      <div class="empty-title">First digest lands Monday</div>
+      <div class="empty-desc">Your weekly research will appear here automatically every Monday morning.</div>
+    </div>`;
+}
+
+// ── Archive ───────────────────────────────────────────────────────────────────
+
+function renderArchive() {
+  const el = document.getElementById('content-archive');
+
+  if (!HISTORY_DATA || HISTORY_DATA.length === 0) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">&#128197;</div>
+        <div class="empty-title">No previous weeks yet</div>
+        <div class="empty-desc">Past digests will appear here after the second Monday.</div>
+      </div>`;
+    return;
+  }
+
+  let html = '';
+  HISTORY_DATA.forEach((week, i) => {
+    const preview = week.takeaway ? week.takeaway.substring(0, 80) + (week.takeaway.length > 80 ? '…' : '') : '';
+    html += `
+      <div class="archive-item">
+        <div class="archive-header" onclick="toggleArchive(${i})">
+          <div>
+            <div class="archive-date">${shortDate(week.date)}</div>
+            ${preview ? `<div class="archive-preview">${preview}</div>` : ''}
+          </div>
+          <div class="archive-chevron" id="chev-${i}">&#8964;</div>
+        </div>
+        <div class="archive-body" id="body-${i}">
+          ${sectionsHtml(week)}
+        </div>
+      </div>`;
+  });
+
+  el.innerHTML = html;
+}
+
+function toggleArchive(i) {
+  const body = document.getElementById(`body-${i}`);
+  const chev = document.getElementById(`chev-${i}`);
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chev.classList.toggle('open', !isOpen);
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────
+
+function switchTab(tab) {
+  document.getElementById('view-this').style.display    = tab === 'this'    ? '' : 'none';
+  document.getElementById('view-archive').style.display = tab === 'archive' ? '' : 'none';
+  document.getElementById('tab-this').classList.toggle('active',    tab === 'this');
+  document.getElementById('tab-archive').classList.toggle('active', tab === 'archive');
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+
+renderThisWeek();
+renderArchive();
+</script>
+</body>
+</html>
