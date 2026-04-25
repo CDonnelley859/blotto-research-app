@@ -35,17 +35,18 @@ body {
 .brand { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
 .title { font-size: 26px; font-weight: 500; line-height: 1.15; }
 
+/* 4-tab layout */
 .tabs {
-  display: flex; gap: 4px;
+  display: flex; gap: 3px;
   background: var(--surface); border: 0.5px solid var(--border);
   border-radius: 12px; padding: 4px;
   margin-bottom: 20px;
 }
 .tab {
-  flex: 1; text-align: center; font-size: 14px; font-weight: 500;
-  padding: 9px 12px; border-radius: 9px; cursor: pointer;
+  flex: 1; text-align: center; font-size: 12px; font-weight: 500;
+  padding: 8px 4px; border-radius: 9px; cursor: pointer;
   color: var(--muted); transition: background 0.15s, color 0.15s;
-  user-select: none;
+  user-select: none; white-space: nowrap;
 }
 .tab.active { background: var(--dark); color: #f5f4f0; }
 
@@ -54,37 +55,77 @@ body {
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
   font-size: 12px; font-weight: 500; padding: 6px 12px; border-radius: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 .badge-green { background: #EAF3DE; color: #3B6D11; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: #639922; }
+
+/* Game filter pills */
+.filter-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.filter-pill {
+  font-size: 12px; font-weight: 500; padding: 5px 12px; border-radius: 20px;
+  cursor: pointer; user-select: none; border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); transition: all 0.15s;
+}
+.filter-pill.active { background: var(--dark); color: #f5f4f0; border-color: var(--dark); }
+
+/* Search bar */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 0.5px solid var(--border);
+  border-radius: 10px; padding: 10px 14px; margin-bottom: 16px;
+}
+.search-bar input {
+  border: none; outline: none; background: transparent;
+  font-size: 14px; color: var(--dark); flex: 1; font-family: inherit;
+}
+.search-bar input::placeholder { color: var(--muted); }
+.search-icon { color: var(--muted); font-size: 14px; }
 
 .section { margin-bottom: 16px; }
 .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .section-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
 .section-title { font-size: 16px; font-weight: 500; }
 
+/* Cards */
 .card { background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border); padding: 14px 16px; margin-bottom: 8px; }
-.card-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.card.bookmarked { border-color: #639922; }
+.card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 4px; }
+.card-name { font-size: 14px; font-weight: 500; flex: 1; }
+.card-actions { display: flex; gap: 10px; flex-shrink: 0; padding-top: 1px; }
+.card-btn { background: none; border: none; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; color: var(--muted); }
+.card-btn.on { color: #1a1a18; }
 .card-body { font-size: 13px; color: #4a4946; line-height: 1.55; }
 .card-tag { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px; margin-top: 7px; }
-.tag-red { background: #FCEBEB; color: #A32D2D; }
-.tag-blue { background: #E6F1FB; color: #185FA5; }
+.tag-red   { background: #FCEBEB; color: #A32D2D; }
+.tag-blue  { background: #E6F1FB; color: #185FA5; }
 .tag-amber { background: #FAEEDA; color: #854F0B; }
 
+/* Note on card */
+.card-note {
+  font-size: 12px; color: #555; background: #f9f9f7;
+  border-left: 2px solid #d3d1c7; padding: 6px 8px;
+  border-radius: 0 4px 4px 0; margin-top: 8px; line-height: 1.5; font-style: italic;
+}
+
+/* Game tag pills on cards */
+.card-game-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.game-tag-pill {
+  font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px;
+  cursor: pointer; user-select: none;
+  border: 1px solid var(--border); color: var(--muted); background: var(--bg);
+  transition: all 0.15s;
+}
+.game-tag-pill.active { background: var(--dark); color: #f5f4f0; border-color: var(--dark); }
+
+/* Takeaway */
 .takeaway { background: var(--dark); color: #f5f4f0; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
 .takeaway-label { font-size: 11px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #888780; margin-bottom: 6px; }
 .takeaway-text { font-size: 14px; line-height: 1.6; color: #e8e7e3; }
 
 /* Archive */
-.archive-item {
-  background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border);
-  margin-bottom: 8px; overflow: hidden;
-}
-.archive-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 16px; cursor: pointer; user-select: none;
-}
+.archive-item { background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border); margin-bottom: 8px; overflow: hidden; }
+.archive-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
 .archive-date { font-size: 14px; font-weight: 500; }
 .archive-preview { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 240px; }
 .archive-chevron { font-size: 14px; color: var(--muted); transition: transform 0.2s; flex-shrink: 0; }
@@ -94,10 +135,76 @@ body {
 .archive-body .section { margin-top: 14px; }
 .archive-body .takeaway { margin-top: 14px; margin-bottom: 0; }
 
+/* Watchlist */
+.watchlist-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.watchlist-sub { font-size: 13px; color: var(--muted); }
+.add-btn {
+  background: var(--dark); color: #f5f4f0; border: none; border-radius: 10px;
+  padding: 9px 16px; font-size: 13px; font-weight: 500; cursor: pointer; font-family: inherit;
+}
+.wl-card { background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border); padding: 14px 16px; margin-bottom: 8px; }
+.wl-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.wl-card-name { font-size: 14px; font-weight: 500; }
+.wl-card-btns { display: flex; gap: 10px; }
+.wl-btn { background: none; border: none; cursor: pointer; font-size: 15px; padding: 0; color: var(--muted); }
+.wl-status { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 6px; margin-top: 6px; }
+.s-watching  { background: #FAEEDA; color: #854F0B; }
+.s-open      { background: #EAF3DE; color: #3B6D11; }
+.s-contacted { background: #E6F1FB; color: #185FA5; }
+.s-pitched   { background: #EEEDFE; color: #4B3A9E; }
+.s-closed    { background: #FCEBEB; color: #A32D2D; }
+.wl-note { font-size: 12px; color: #555; margin-top: 8px; font-style: italic; line-height: 1.5; }
+.wl-added { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+/* Empty & utility */
 .empty-state { background: var(--surface); border-radius: 12px; border: 0.5px solid var(--border); padding: 32px 20px; text-align: center; }
 .empty-icon { font-size: 32px; margin-bottom: 12px; }
 .empty-title { font-size: 15px; font-weight: 500; margin-bottom: 8px; }
 .empty-desc { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.no-results { text-align: center; font-size: 13px; color: var(--muted); padding: 28px 0; }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: flex-end; justify-content: center; z-index: 100;
+}
+.modal-sheet {
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding: 20px 20px calc(var(--safe-bottom) + 24px);
+  width: 100%; max-width: 480px;
+}
+.modal-handle { width: 40px; height: 4px; background: var(--border); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 16px; font-weight: 500; margin-bottom: 2px; }
+.modal-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; text-transform: capitalize; }
+.modal-label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.modal-input {
+  width: 100%; border: 0.5px solid var(--border); border-radius: 10px;
+  padding: 12px; font-size: 14px; font-family: inherit; color: var(--dark);
+  background: var(--bg); outline: none; margin-bottom: 14px;
+}
+.modal-textarea {
+  width: 100%; border: 0.5px solid var(--border); border-radius: 10px;
+  padding: 12px; font-size: 14px; font-family: inherit; color: var(--dark);
+  background: var(--bg); resize: none; outline: none; margin-bottom: 16px;
+  line-height: 1.5; min-height: 80px;
+}
+.modal-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+.modal-pill {
+  font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 20px;
+  cursor: pointer; user-select: none; border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); transition: all 0.15s;
+}
+.modal-pill.active { background: var(--dark); color: #f5f4f0; border-color: var(--dark); }
+.modal-btns { display: flex; gap: 8px; }
+.btn-save {
+  flex: 1; background: var(--dark); color: #f5f4f0; border: none; border-radius: 10px;
+  padding: 13px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit;
+}
+.btn-cancel {
+  background: var(--bg); color: var(--dark); border: 0.5px solid var(--border);
+  border-radius: 10px; padding: 13px 20px; font-size: 14px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+}
 
 .divider { height: 0.5px; background: var(--border); margin: 20px 0; }
 .footer-text { font-size: 12px; color: var(--muted); text-align: center; line-height: 1.7; }
@@ -111,173 +218,29 @@ body {
 </div>
 
 <div class="tabs">
-  <div class="tab active" id="tab-this" onclick="switchTab('this')">This Week</div>
-  <div class="tab" id="tab-archive" onclick="switchTab('archive')">Previous Weeks</div>
+  <div class="tab active" id="tab-this"      onclick="switchTab('this')">This Week</div>
+  <div class="tab"        id="tab-archive"   onclick="switchTab('archive')">Archive</div>
+  <div class="tab"        id="tab-saved"     onclick="switchTab('saved')">Saved</div>
+  <div class="tab"        id="tab-watchlist" onclick="switchTab('watchlist')">Watchlist</div>
 </div>
 
 <!-- THIS WEEK -->
 <div id="view-this">
-  <div class="badge badge-green">
-    <div class="dot"></div>
-    <span>Updates every Monday at 8am</span>
+  <div class="filter-row">
+    <div class="filter-pill active" data-f="all" onclick="setFilter('all')">All</div>
+    <div class="filter-pill" data-f="dd" onclick="setFilter('dd')">Drunk Detective</div>
+    <div class="filter-pill" data-f="bf" onclick="setFilter('bf')">Bar Fight</div>
+    <div class="filter-pill" data-f="ff" onclick="setFilter('ff')">Fixed Fight</div>
   </div>
+  <div class="badge badge-green"><div class="dot"></div><span>Updates every Monday at 8am</span></div>
   <div class="week-label" id="week-label"></div>
   <div id="content-this"></div>
 </div>
 
 <!-- ARCHIVE -->
-<div id="view-archive" style="display:none;">
-  <div id="content-archive"></div>
-</div>
-
-<div class="divider"></div>
-<div class="footer-text">
-  Competitors &middot; Publishers &middot; Market Trends<br>
-  Full reports in Outputs &rsaquo; Blotto Games &rsaquo; Research
-</div>
-
-<script>
-// Replaced each Monday by the scheduled task. Do not edit manually.
-const RESEARCH_DATA = {"date": "2026-04-24", "takeaway": "Murder on the Rocks raised $100,000 on Kickstarter in 2025 combining social deduction, hidden roles, and drinking mechanics \u2014 which is Drunk Detective's exact territory. That campaign proves the paying audience exists. The immediate task is building a clear differentiation story before any pitch or Kickstarter launch. Separately, UKGE is six weeks away on 29 May in Birmingham \u2014 Osprey Games and Big Potato will be there, and if Drunk Detective is playtestable, Callum should seriously consider attending.", "competitors": [{"name": "Murder on the Rocks \u2014 Misfit Mixers", "body": "Kickstarter May\u2013June 2025. Raised $100,364 from 1,249 backers. Social deduction with hidden murderer role \u2014 players blindfolded while murderer doses another's drink using themed droppers. Described as Werewolf meets Mysterium. Noir-adjacent cocktail aesthetic and TikTok-driven marketing. Drunk Detective's most direct competitor \u2014 same audience, same core mechanic.", "tag": "funded"}, {"name": "Heroes of Barcadia \u2014 Rollacrit", "body": "2\u20136 players. Tile-based dungeon crawler where your drink is your health bar. Retail release now on Amazon. Sits at the serious, mechanical end of the drinking game market \u2014 close to where Blotto wants to position. Proves there's appetite for genuinely gameplay-driven drinking games among enthusiasts.", "tag": "competitor"}, {"name": "Root: The Homeland Expansion \u2014 Leder Games", "body": "Raised $2.45 million from 27,550 backers in 2026. Not a drinking game, but directly relevant to Bar Fight. Asymmetric faction gameplay remains one of the most commercially proven tabletop mechanics. The scale confirms strong durable demand for asymmetric design.", "tag": "funded"}, {"name": "Tavern Brawl / Fantasy Tavern Brawl \u2014 Various", "body": "Multiple Kickstarter projects share the bar fight and tavern brawl theme. One is a dexterity card-tossing game; another is strategic unit combat. Crowded space. Bar Fight needs a clear differentiator \u2014 the drinking mechanic integration is the obvious one none of these have.", "tag": "competitor"}, {"name": "Brawlhalla: The Card Game \u2014 Maestro Media/FLYOS", "body": "Kickstarter November 2025. 2\u20134 players. IP-backed fighting card game with tactical combo-based combat. Relevant to Fixed Fight as another entry in the competitive fighting card game space. IP advantage is significant \u2014 harder to compete with on name recognition alone.", "tag": "competitor"}], "publishers": [{"name": "Osprey Games", "body": "Oxford, UK. Publishes social and thematic games \u2014 Wavelength, Inhuman Conditions, Undaunted. Exhibiting at UKGE 2026 in Birmingham (29\u201331 May). Wargame submissions formally open; board game enquiries welcomed. Noir and thematic tone of Drunk Detective fits their aesthetic. Best approached directly ahead of UKGE.", "tag": "uk"}, {"name": "Stonemaier Games", "body": "US, international distribution. Open for submissions. Specifically looking for light, social, highly replayable games supporting 2\u20138 players with easy drop-in play. Drunk Detective fits the brief better than Fixed Fight. Requires sell sheet and short gameplay video.", "tag": "open"}, {"name": "Big Potato Games", "body": "London, UK. Publisher behind Scrawl, Bucket of Doom, Herd Mentality. Leans into TikTok and content creator marketing. No formal open submissions \u2014 direct outreach is the route in. Drunk Detective's social and party DNA fits squarely in their lane.", "tag": "uk"}, {"name": "Dranda Games", "body": "Birmingham, UK. Award-winning indie publisher \u2014 5 UKGE awards, Dice Tower Seal of Excellence. Actively accepting submissions in 2025. Smaller than Osprey but UK-based and well-regarded. Worth approaching if the bigger publishers don't bite.", "tag": "open"}], "trends": [{"name": "The crime-plus-drinking format is proven and paying", "body": "Murder on the Rocks raised over $100,000 on Kickstarter in 2025 with TikTok-driven marketing. Direct validation that Drunk Detective's core concept has a paying audience. The pressing question is differentiation \u2014 Drunk Detective needs a confident answer to how it differs before any pitch or campaign."}, {"name": "Kickstarter is cooling; Gamefound is rising fast", "body": "Kickstarter ran 3,200 successful tabletop campaigns in 2024 raising $185.4M \u2014 down roughly 2.7% year on year. Gamefound grew 49% to $85M and now holds 6 of the top 10 most-funded tabletop campaigns of 2024. Gamefound then acquired Indiegogo. For a premium-positioned game like Drunk Detective, Gamefound is worth serious consideration over Kickstarter."}, {"name": "UKGE 2026 is six weeks away", "body": "The UK Games Expo runs 29\u201331 May in Birmingham \u2014 600 exhibitors and 53,000 visitors expected. Osprey Games and Big Potato will be exhibiting. Publishers take designer meetings at UKGE. If Drunk Detective is playtestable, this is the best face-to-face publisher opportunity of the year. Decision needed in the next week or two."}]}; /* __RESEARCH_DATA__ */
-const HISTORY_DATA = []; /* __HISTORY_DATA__ */
-
-// ── Utilities ────────────────────────────────────────────────────────────────
-
-function formatDate(str) {
-  try {
-    return new Date(str).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-  } catch(e) { return str; }
-}
-
-function shortDate(str) {
-  try {
-    return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  } catch(e) { return str; }
-}
-
-function tagHtml(tag) {
-  const map = {
-    competitor: ['tag-red',  'Direct competitor'],
-    funded:     ['tag-blue', 'Well funded'],
-    open:       ['tag-blue', 'Open submissions'],
-    uk:         ['tag-amber','UK-based'],
-    closed:     ['tag-red',  'Closed submissions']
-  };
-  if (!tag || !map[tag]) return '';
-  return `<span class="card-tag ${map[tag][0]}">${map[tag][1]}</span>`;
-}
-
-function sectionsHtml(data) {
-  let html = '';
-
-  if (data.takeaway) {
-    html += `<div class="takeaway"><div class="takeaway-label">This week&#8217;s takeaway</div><div class="takeaway-text">${data.takeaway}</div></div>`;
-  }
-
-  if (data.competitors && data.competitors.length) {
-    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#EEEDFE;">&#9876;</div><div class="section-title">Competitor Games</div></div>`;
-    data.competitors.forEach(c => {
-      html += `<div class="card"><div class="card-name">${c.name}</div><div class="card-body">${c.body}</div>${tagHtml(c.tag)}</div>`;
-    });
-    html += `</div>`;
-  }
-
-  if (data.publishers && data.publishers.length) {
-    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#E1F5EE;">&#128218;</div><div class="section-title">Publishers</div></div>`;
-    data.publishers.forEach(p => {
-      html += `<div class="card"><div class="card-name">${p.name}</div><div class="card-body">${p.body}</div>${tagHtml(p.tag)}</div>`;
-    });
-    html += `</div>`;
-  }
-
-  if (data.trends && data.trends.length) {
-    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:#FAEEDA;">&#128200;</div><div class="section-title">Market Trends</div></div>`;
-    data.trends.forEach(t => {
-      html += `<div class="card"><div class="card-name">${t.name}</div><div class="card-body">${t.body}</div></div>`;
-    });
-    html += `</div>`;
-  }
-
-  return html;
-}
-
-// ── This Week ────────────────────────────────────────────────────────────────
-
-function renderThisWeek() {
-  const label = document.getElementById('week-label');
-  if (RESEARCH_DATA && RESEARCH_DATA.date) {
-    label.textContent = 'Week of ' + formatDate(RESEARCH_DATA.date);
-  } else {
-    const today = new Date();
-    label.textContent = 'Week of ' + today.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-  }
-
-  const inner = sectionsHtml(RESEARCH_DATA || {});
-  document.getElementById('content-this').innerHTML = inner || `
-    <div class="empty-state">
-      <div class="empty-icon">&#128269;</div>
-      <div class="empty-title">First digest lands Monday</div>
-      <div class="empty-desc">Your weekly research will appear here automatically every Monday morning.</div>
-    </div>`;
-}
-
-// ── Archive ───────────────────────────────────────────────────────────────────
-
-function renderArchive() {
-  const el = document.getElementById('content-archive');
-
-  if (!HISTORY_DATA || HISTORY_DATA.length === 0) {
-    el.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">&#128197;</div>
-        <div class="empty-title">No previous weeks yet</div>
-        <div class="empty-desc">Past digests will appear here after the second Monday.</div>
-      </div>`;
-    return;
-  }
-
-  let html = '';
-  HISTORY_DATA.forEach((week, i) => {
-    const preview = week.takeaway ? week.takeaway.substring(0, 80) + (week.takeaway.length > 80 ? '…' : '') : '';
-    html += `
-      <div class="archive-item">
-        <div class="archive-header" onclick="toggleArchive(${i})">
-          <div>
-            <div class="archive-date">${shortDate(week.date)}</div>
-            ${preview ? `<div class="archive-preview">${preview}</div>` : ''}
-          </div>
-          <div class="archive-chevron" id="chev-${i}">&#8964;</div>
-        </div>
-        <div class="archive-body" id="body-${i}">
-          ${sectionsHtml(week)}
-        </div>
-      </div>`;
-  });
-
-  el.innerHTML = html;
-}
-
-function toggleArchive(i) {
-  const body = document.getElementById(`body-${i}`);
-  const chev = document.getElementById(`chev-${i}`);
-  const isOpen = body.classList.contains('open');
-  body.classList.toggle('open', !isOpen);
-  chev.classList.toggle('open', !isOpen);
-}
-
-// ── Tabs ─────────────────────────────────────────────────────────────────────
-
-function switchTab(tab) {
-  document.getElementById('view-this').style.display    = tab === 'this'    ? '' : 'none';
-  document.getElementById('view-archive').style.display = tab === 'archive' ? '' : 'none';
-  document.getElementById('tab-this').classList.toggle('active',    tab === 'this');
-  document.getElementById('tab-archive').classList.toggle('active', tab === 'archive');
-}
-
-// ── Boot ──────────────────────────────────────────────────────────────────────
-
-renderThisWeek();
-renderArchive();
-</script>
-</body>
-</html>
+<div id="view-archive" style="display:none">
+  <div class="search-bar">
+    <span class="search-icon">&#128269;</span>
+    <input type="text" id="search-input" placeholder="Search archive…" oninput="renderArchive()">
+  </div>
+  <div id="content
