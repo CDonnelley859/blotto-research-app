@@ -243,4 +243,475 @@ body {
     <span class="search-icon">&#128269;</span>
     <input type="text" id="search-input" placeholder="Search archive…" oninput="renderArchive()">
   </div>
-  <div id="content
+  <div id="content-archive"></div>
+</div>
+
+<!-- SAVED -->
+<div id="view-saved" style="display:none">
+  <div id="content-saved"></div>
+</div>
+
+<!-- WATCHLIST -->
+<div id="view-watchlist" style="display:none">
+  <div class="watchlist-toolbar">
+    <div class="watchlist-sub">Publishers you're tracking</div>
+    <button class="add-btn" onclick="openWlModal(null)">+ Add</button>
+  </div>
+  <div id="content-watchlist"></div>
+</div>
+
+<div class="divider"></div>
+<div class="footer-text">
+  Competitors &middot; Publishers &middot; Market Trends<br>
+  Full reports in Outputs &rsaquo; Blotto Games &rsaquo; Research
+</div>
+
+<!-- Note modal -->
+<div class="modal-overlay" id="note-modal" style="display:none" onclick="if(event.target===this)closeNoteModal()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="nm-name"></div>
+    <div class="modal-sub"   id="nm-type"></div>
+    <div class="modal-label">Your note</div>
+    <textarea class="modal-textarea" id="nm-text" placeholder="Add a note…" rows="3"></textarea>
+    <div class="modal-label">Relevant to</div>
+    <div class="modal-pills" id="nm-games"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeNoteModal()">Cancel</button>
+      <button class="btn-save"   onclick="saveNote()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Watchlist modal -->
+<div class="modal-overlay" id="wl-modal" style="display:none" onclick="if(event.target===this)closeWlModal()">
+  <div class="modal-sheet" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="wl-modal-title">Add Publisher</div>
+    <div style="margin-bottom:12px">
+      <div class="modal-label">Publisher name</div>
+      <input class="modal-input" id="wl-name" type="text" placeholder="e.g. Osprey Games">
+    </div>
+    <div class="modal-label">Status</div>
+    <div class="modal-pills" id="wl-statuses"></div>
+    <div class="modal-label">Notes</div>
+    <textarea class="modal-textarea" id="wl-note" placeholder="Submission window, contact, anything useful…" rows="3"></textarea>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeWlModal()">Cancel</button>
+      <button class="btn-save"   onclick="savePublisher()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Replaced each Monday by the scheduled task. Do not edit manually.
+const RESEARCH_DATA = null; /* __RESEARCH_DATA__ */
+const HISTORY_DATA = []; /* __HISTORY_DATA__ */
+
+// ── Constants ─────────────────────────────────────────────────────────────────────────────────
+
+const GAMES = [
+  { id: 'dd', label: 'Drunk Detective' },
+  { id: 'bf', label: 'Bar Fight' },
+  { id: 'ff', label: 'Fixed Fight' }
+];
+
+const STATUSES = [
+  { id: 'watching',  label: 'Watching',  cls: 's-watching'  },
+  { id: 'open',      label: 'Open',      cls: 's-open'      },
+  { id: 'contacted', label: 'Contacted', cls: 's-contacted' },
+  { id: 'pitched',   label: 'Pitched',   cls: 's-pitched'   },
+  { id: 'closed',    label: 'Closed',    cls: 's-closed'    }
+];
+
+// ── Storage ─────────────────────────────────────────────────────────────────────────────────────
+
+const SK = {
+  bookmarks: 'blotto-bookmarks',
+  notes:     'blotto-notes',
+  games:     'blotto-games',
+  watchlist: 'blotto-watchlist'
+};
+
+function ls(key) {
+  try { return JSON.parse(localStorage.getItem(key) || (key === SK.watchlist ? '[]' : '{}')); }
+  catch(e) { return key === SK.watchlist ? [] : {}; }
+}
+function lset(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+
+// ── Card IDs ───────────────────────────────────────────────────────────────────────────────────
+
+function makeId(type, name) {
+  return type + '_' + (name || '').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+}
+
+const CREG = {};
+
+// ── Filter state ───────────────────────────────────────────────────────────────────────────────
+
+let activeFilter = 'all';
+
+function setFilter(f) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-pill').forEach(p =>
+    p.classList.toggle('active', p.dataset.f === f)
+  );
+  renderThisWeek();
+}
+
+// ── Utilities ──────────────────────────────────────────────────────────────────────────────────
+
+function fmtDate(str) {
+  try { return new Date(str).toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }
+  catch(e) { return str; }
+}
+function shortDate(str) {
+  try { return new Date(str).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}); }
+  catch(e) { return str; }
+}
+function tagHtml(tag) {
+  const m = {competitor:['tag-red','Direct competitor'],funded:['tag-blue','Well funded'],open:['tag-blue','Open submissions'],uk:['tag-amber','UK-based'],closed:['tag-red','Closed submissions']};
+  return (tag && m[tag]) ? `<span class="card-tag ${m[tag][0]}">${m[tag][1]}</span>` : '';
+}
+function statusInfo(id) { return STATUSES.find(s=>s.id===id) || STATUSES[0]; }
+
+// ── Card HTML ──────────────────────────────────────────────────────────────────────────────────
+
+function cardHtml(type, item, weekDate, opts) {
+  const id      = makeId(type, item.name);
+  const prefix  = (opts && opts.elemPrefix) ? opts.elemPrefix + '-' : '';
+  const elemId  = prefix + 'c-' + id;
+  const showGT  = !!(opts && opts.showGameTags);
+  CREG[id] = { type, name: item.name, body: item.body, tag: item.tag, weekDate };
+
+  const bm    = ls(SK.bookmarks);
+  const notes = ls(SK.notes);
+  const gtags = ls(SK.games);
+  const saved = !!bm[id];
+  const note  = notes[id] || '';
+  const myG   = gtags[id] || [];
+
+  if (showGT && activeFilter !== 'all' && !myG.includes(activeFilter)) return '';
+
+  const gamePills = showGT ? `<div class="card-game-tags">${GAMES.map(g =>
+    `<span class="game-tag-pill${myG.includes(g.id)?' active':''}" onclick="toggleGameTag('${id}','${g.id}',this)">${g.label}</span>`
+  ).join('')}</div>` : '';
+
+  const noteEl = note ? `<div class="card-note">${note}</div>` : '';
+
+  return `
+    <div class="card${saved?' bookmarked':''}" id="${elemId}">
+      <div class="card-top">
+        <div class="card-name">${item.name}</div>
+        <div class="card-actions">
+          <button class="card-btn" onclick="openNoteModal('${id}')" title="Note">✏️</button>
+          <button class="card-btn${saved?' on':''}" onclick="toggleBm('${id}','${elemId}',this)" title="Save">${saved?'&#9733;':'&#9734;'}</button>
+        </div>
+      </div>
+      <div class="card-body">${item.body}</div>
+      ${tagHtml(item.tag)}
+      ${noteEl}
+      ${gamePills}
+    </div>`;
+}
+
+// ── Bookmark ─────────────────────────────────────────────────────────────────────────────────────
+
+function toggleBm(id, elemId, btn) {
+  const bm = ls(SK.bookmarks);
+  const el = document.getElementById(elemId);
+  if (bm[id]) {
+    delete bm[id];
+    btn.innerHTML = '&#9734;'; btn.classList.remove('on');
+    if (el) el.classList.remove('bookmarked');
+  } else {
+    const c = CREG[id] || {};
+    bm[id] = { type: c.type, name: c.name, body: c.body, tag: c.tag, weekDate: c.weekDate };
+    btn.innerHTML = '&#9733;'; btn.classList.add('on');
+    if (el) el.classList.add('bookmarked');
+  }
+  lset(SK.bookmarks, bm);
+  if (document.getElementById('view-saved').style.display !== 'none') renderSaved();
+}
+
+// ── Game tags ───────────────────────────────────────────────────────────────────────────────────
+
+function toggleGameTag(id, gid, pill) {
+  const gt = ls(SK.games);
+  const arr = gt[id] || [];
+  const i = arr.indexOf(gid);
+  if (i > -1) { arr.splice(i,1); pill.classList.remove('active'); }
+  else         { arr.push(gid);  pill.classList.add('active'); }
+  gt[id] = arr; lset(SK.games, gt);
+  if (activeFilter !== 'all') renderThisWeek();
+  if (document.getElementById('note-modal').style.display !== 'none' &&
+      document.getElementById('note-modal').dataset.id === id) buildNmGames(id);
+}
+
+// ── Note modal ──────────────────────────────────────────────────────────────────────────────────
+
+function openNoteModal(id) {
+  const c = CREG[id] || {};
+  document.getElementById('nm-name').textContent = c.name || id;
+  document.getElementById('nm-type').textContent = c.type || '';
+  document.getElementById('nm-text').value = ls(SK.notes)[id] || '';
+  document.getElementById('note-modal').dataset.id = id;
+  buildNmGames(id);
+  document.getElementById('note-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('nm-text').focus(), 80);
+}
+
+function buildNmGames(id) {
+  const myG = ls(SK.games)[id] || [];
+  document.getElementById('nm-games').innerHTML = GAMES.map(g =>
+    `<span class="modal-pill${myG.includes(g.id)?' active':''}" onclick="toggleNmGame('${id}','${g.id}',this)">${g.label}</span>`
+  ).join('');
+}
+
+function toggleNmGame(id, gid, pill) {
+  const gt = ls(SK.games);
+  const arr = gt[id] || [];
+  const i = arr.indexOf(gid);
+  if (i > -1) { arr.splice(i,1); pill.classList.remove('active'); }
+  else         { arr.push(gid);  pill.classList.add('active'); }
+  gt[id] = arr; lset(SK.games, gt);
+  const card = document.querySelector(`[id$="c-${id}"]`);
+  if (card) card.querySelectorAll('.game-tag-pill').forEach(p => {
+    const g = GAMES.find(x => x.label === p.textContent);
+    if (g) p.classList.toggle('active', arr.includes(g.id));
+  });
+}
+
+function saveNote() {
+  const id   = document.getElementById('note-modal').dataset.id;
+  const text = document.getElementById('nm-text').value.trim();
+  const notes = ls(SK.notes);
+  if (text) notes[id] = text; else delete notes[id];
+  lset(SK.notes, notes);
+  closeNoteModal();
+  renderThisWeek();
+  if (document.getElementById('view-saved').style.display !== 'none') renderSaved();
+}
+
+function closeNoteModal() {
+  document.getElementById('note-modal').style.display = 'none';
+}
+
+// ── Sections renderer ───────────────────────────────────────────────────────────────────────────
+
+function sectionsHtml(data, weekDate, opts) {
+  let html = '';
+  if (data.takeaway) {
+    html += `<div class="takeaway"><div class="takeaway-label">This week&#8217;s takeaway</div><div class="takeaway-text">${data.takeaway}</div></div>`;
+  }
+  const defs = [
+    { key: 'competitors', type: 'competitor', icon: '&#9876;',   bg: '#EEEDFE', label: 'Competitor Games' },
+    { key: 'publishers',  type: 'publisher',  icon: '&#128218;', bg: '#E1F5EE', label: 'Publishers'       },
+    { key: 'trends',      type: 'trend',      icon: '&#128200;', bg: '#FAEEDA', label: 'Market Trends'    }
+  ];
+  defs.forEach(({ key, type, icon, bg, label }) => {
+    if (!data[key] || !data[key].length) return;
+    const cards = data[key].map(item => cardHtml(type, item, weekDate, opts)).join('');
+    if (!cards.trim()) return;
+    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:${bg}">${icon}</div><div class="section-title">${label}</div></div>${cards}</div>`;
+  });
+  return html;
+}
+
+// ── This Week ────────────────────────────────────────────────────────────────────────────────────
+
+function renderThisWeek() {
+  const lbl = document.getElementById('week-label');
+  lbl.textContent = RESEARCH_DATA && RESEARCH_DATA.date
+    ? 'Week of ' + fmtDate(RESEARCH_DATA.date)
+    : 'Week of ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+
+  const inner = sectionsHtml(RESEARCH_DATA || {}, RESEARCH_DATA && RESEARCH_DATA.date, { showGameTags: true });
+  document.getElementById('content-this').innerHTML = inner || `
+    <div class="empty-state">
+      <div class="empty-icon">&#128269;</div>
+      <div class="empty-title">First digest lands Monday</div>
+      <div class="empty-desc">Your weekly research will appear here automatically every Monday morning.</div>
+    </div>`;
+}
+
+// ── Archive ───────────────────────────────────────────────────────────────────────────────────────
+
+function renderArchive() {
+  const q  = (document.getElementById('search-input').value || '').toLowerCase().trim();
+  const el = document.getElementById('content-archive');
+
+  if (!HISTORY_DATA || !HISTORY_DATA.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128197;</div><div class="empty-title">No previous weeks yet</div><div class="empty-desc">Past digests will appear here after the second Monday.</div></div>`;
+    return;
+  }
+
+  const filtered = q ? HISTORY_DATA.filter(w => JSON.stringify(w).toLowerCase().includes(q)) : HISTORY_DATA;
+
+  if (!filtered.length) {
+    el.innerHTML = `<div class="no-results">No results for &ldquo;${q}&rdquo;</div>`;
+    return;
+  }
+
+  el.innerHTML = filtered.map((week, i) => {
+    const preview = week.takeaway ? week.takeaway.substring(0,80) + (week.takeaway.length>80?'\u2026':'') : '';
+    return `<div class="archive-item">
+      <div class="archive-header" onclick="toggleArc(${i})">
+        <div>
+          <div class="archive-date">${shortDate(week.date)}</div>
+          ${preview ? `<div class="archive-preview">${preview}</div>` : ''}
+        </div>
+        <div class="archive-chevron" id="chev-${i}">&#8964;</div>
+      </div>
+      <div class="archive-body" id="body-${i}">
+        ${sectionsHtml(week, week.date, { elemPrefix: 'arc' + i })}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleArc(i) {
+  document.getElementById('body-' + i).classList.toggle('open');
+  document.getElementById('chev-' + i).classList.toggle('open');
+}
+
+// ── Saved ──────────────────────────────────────────────────────────────────────────────────────────
+
+function renderSaved() {
+  const bm = ls(SK.bookmarks);
+  const el = document.getElementById('content-saved');
+  const ids = Object.keys(bm);
+
+  if (!ids.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">&#11088;</div><div class="empty-title">Nothing saved yet</div><div class="empty-desc">Tap the &#9734; on any card to save it here for later.</div></div>`;
+    return;
+  }
+
+  const groups = { competitor: [], publisher: [], trend: [] };
+  ids.forEach(id => {
+    const b = bm[id];
+    const type = b.type || id.split('_')[0];
+    if (!groups[type]) groups[type] = [];
+    groups[type].push({ id, item: { name: b.name, body: b.body, tag: b.tag }, weekDate: b.weekDate, type });
+  });
+
+  const defs = [
+    { key:'competitor', icon:'&#9876;',   bg:'#EEEDFE', label:'Competitor Games' },
+    { key:'publisher',  icon:'&#128218;', bg:'#E1F5EE', label:'Publishers'       },
+    { key:'trend',      icon:'&#128200;', bg:'#FAEEDA', label:'Market Trends'    }
+  ];
+
+  let html = '';
+  defs.forEach(({ key, icon, bg, label }) => {
+    const items = groups[key] || [];
+    if (!items.length) return;
+    html += `<div class="section"><div class="section-header"><div class="section-icon" style="background:${bg}">${icon}</div><div class="section-title">${label}</div></div>`;
+    items.forEach(({ item, type, weekDate }) => {
+      html += cardHtml(type, item, weekDate, { elemPrefix: 'sv' });
+    });
+    html += `</div>`;
+  });
+
+  el.innerHTML = html || `<div class="no-results">Nothing to show.</div>`;
+}
+
+// ── Watchlist ──────────────────────────────────────────────────────────────────────────────────────
+
+let wlIdx = null;
+let wlStatus = 'watching';
+
+function renderWatchlist() {
+  const list = ls(SK.watchlist);
+  const el = document.getElementById('content-watchlist');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128218;</div><div class="empty-title">No publishers tracked yet</div><div class="empty-desc">Add publishers you're thinking of pitching to, and track where you're up to.</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map((pub, i) => {
+    const st = statusInfo(pub.status);
+    return `<div class="wl-card">
+      <div class="wl-card-top">
+        <div class="wl-card-name">${pub.name}</div>
+        <div class="wl-card-btns">
+          <button class="wl-btn" onclick="openWlModal(${i})" title="Edit">✏️</button>
+          <button class="wl-btn" onclick="deletePublisher(${i})" title="Delete">&#128465;</button>
+        </div>
+      </div>
+      <span class="wl-status ${st.cls}">${st.label}</span>
+      ${pub.note ? `<div class="wl-note">${pub.note}</div>` : ''}
+      <div class="wl-added">Added ${shortDate(pub.added)}</div>
+    </div>`;
+  }).join('');
+}
+
+function openWlModal(idx) {
+  wlIdx = idx;
+  const list = ls(SK.watchlist);
+  const pub = idx !== null ? list[idx] : null;
+  wlStatus = pub ? (pub.status || 'watching') : 'watching';
+  document.getElementById('wl-modal-title').textContent = pub ? 'Edit Publisher' : 'Add Publisher';
+  document.getElementById('wl-name').value = pub ? pub.name : '';
+  document.getElementById('wl-note').value = pub ? (pub.note || '') : '';
+  buildWlStatuses();
+  document.getElementById('wl-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('wl-name').focus(), 80);
+}
+
+function buildWlStatuses() {
+  document.getElementById('wl-statuses').innerHTML = STATUSES.map(s =>
+    `<span class="modal-pill${wlStatus===s.id?' active':''}" onclick="pickStatus('${s.id}',this)">${s.label}</span>`
+  ).join('');
+}
+
+function pickStatus(id, pill) {
+  wlStatus = id;
+  document.querySelectorAll('#wl-statuses .modal-pill').forEach(p => p.classList.remove('active'));
+  pill.classList.add('active');
+}
+
+function savePublisher() {
+  const name = document.getElementById('wl-name').value.trim();
+  if (!name) { document.getElementById('wl-name').focus(); return; }
+  const note = document.getElementById('wl-note').value.trim();
+  const list = ls(SK.watchlist);
+  if (wlIdx !== null) {
+    list[wlIdx] = { ...list[wlIdx], name, status: wlStatus, note };
+  } else {
+    list.push({ name, status: wlStatus, note, added: new Date().toISOString() });
+  }
+  lset(SK.watchlist, list);
+  closeWlModal();
+  renderWatchlist();
+}
+
+function deletePublisher(i) {
+  const list = ls(SK.watchlist);
+  list.splice(i, 1);
+  lset(SK.watchlist, list);
+  renderWatchlist();
+}
+
+function closeWlModal() {
+  document.getElementById('wl-modal').style.display = 'none';
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────────────────────────────────
+
+const ALL_TABS = ['this', 'archive', 'saved', 'watchlist'];
+
+function switchTab(tab) {
+  ALL_TABS.forEach(t => {
+    document.getElementById('view-' + t).style.display = t === tab ? '' : 'none';
+    document.getElementById('tab-' + t).classList.toggle('active', t === tab);
+  });
+  if (tab === 'saved')     renderSaved();
+  if (tab === 'watchlist') renderWatchlist();
+}
+
+// ── Boot ────────────────────────────────────────────────────────────────────────────────────────────────
+
+renderThisWeek();
+renderArchive();
+</script>
+</body>
+</html>
